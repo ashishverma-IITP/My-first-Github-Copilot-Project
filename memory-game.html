@@ -76,6 +76,24 @@
             margin-bottom: 2rem;
         }
 
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .theme-toggle button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
         button {
             padding: 0.5rem 1rem;
             border: none;
@@ -195,6 +213,56 @@
             border-radius: 8px;
         }
 
+        .dark-theme {
+            --primary-color: #90caf9;
+            --background-color: #121212;
+            --card-back: #1e1e1e;
+            --card-front: #2a2a2a;
+            --text-color: #e0e0e0;
+            --success-color: #66bb6a;
+            --control-background: #1f1f1f;
+            --surface-background: #1d1d1d;
+            --modal-background: rgba(255,255,255,0.08);
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        body.dark-theme {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        body.dark-theme .controls,
+        body.dark-theme .scores-list,
+        body.dark-theme .modal-content {
+            background: var(--surface-background);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+        }
+
+        body.dark-theme .card-face {
+            box-shadow: var(--card-shadow);
+        }
+
+        body.dark-theme button {
+            background: var(--primary-color);
+            color: #121212;
+        }
+
+        body.dark-theme button:hover {
+            background-color: #64b5f6;
+        }
+
+        body.dark-theme .controls {
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.dark-theme .modal {
+            background: rgba(0,0,0,0.7);
+        }
+
+        body.dark-theme .card-back {
+            color: #e0e0e0;
+        }
+
         /* Responsive design adjustments */
         @media (max-width: 600px) {
             .controls {
@@ -233,6 +301,9 @@
             <div class="stat">
                 <h2>Rating</h2>
                 <p class="stat-value rating" aria-live="polite">★★★</p>
+            </div>
+            <div class="theme-toggle">
+                <button class="theme-btn" aria-pressed="false">Dark Theme</button>
             </div>
         </div>
 
@@ -286,8 +357,34 @@
             modal: document.querySelector('.modal'),
             finalStats: document.querySelector('.final-stats'),
             gridButtons: document.querySelectorAll('.grid-btn'),
+            themeButton: document.querySelector('.theme-btn'),
             scoresList: document.querySelector('.scores-list')
         };
+
+        const themeStorageKey = 'memoryGameTheme';
+
+        function applyTheme(theme) {
+            document.body.classList.toggle('dark-theme', theme === 'dark');
+            if (elements.themeButton) {
+                elements.themeButton.setAttribute('aria-pressed', theme === 'dark');
+                elements.themeButton.textContent = theme === 'dark' ? 'Light Theme' : 'Dark Theme';
+            }
+            try {
+                localStorage.setItem(themeStorageKey, theme);
+            } catch (err) {
+                // Ignore storage errors in unsupported environments
+            }
+        }
+
+        function loadTheme() {
+            let theme = 'light';
+            try {
+                theme = localStorage.getItem(themeStorageKey) || 'light';
+            } catch (err) {
+                theme = 'light';
+            }
+            applyTheme(theme);
+        }
 
         // Card symbols (emojis) for both grid sizes
         const symbols = {
@@ -482,6 +579,11 @@
             }
         });
 
+        elements.themeButton.addEventListener('click', () => {
+            const currentTheme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
         document.querySelector('.play-again').addEventListener('click', () => {
             elements.modal.style.display = 'none';
             initializeGrid();
@@ -498,7 +600,8 @@
             });
         });
 
-        // Initialize game
+        // Initialize game and theme
+        loadTheme();
         updateScoresList();
         initializeGrid();
     </script>
